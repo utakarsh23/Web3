@@ -1,14 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.8;
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 
+//importing lib 
+import "./PriceConverter.sol";
 
 contract FundMe {
+
+
+    using PriceConverter for uint256;
     
 
-        uint256 public minimumUsd = 50 * 1e18;
+    uint256 public minimumUsd = 50 * 1e18;
 
+    address[] public funders; //list of address of funders
+    mapping(address => uint256) public addressToAmountFunded;
 
     function fund() payable public {
         //Want to be able to send minimum fund amount in USD
@@ -16,9 +22,18 @@ contract FundMe {
         //trying to set an minimum amount to be sent as 1 ETH, if less then shows the message
         // require(msg.value > 1e18, "Didn't send enough !!!!");
         //money maths is done in term of WEI so 1 eth is set as 10^18
-        // require(msg.value >= minimumUsd, "Didn't send enough !!!!");
-        require(getConversionRate(msg.value) >= minimumUsd, "Didn't send enough !!!!");
 
+        //with library we can also do msg.value.getConversionRate(), huhhhhhhh (ref : ProceConverter(it's a creted lib))
+        // require(msg.value >= minimumUsd, "Didn't send enough !!!!");
+        // require(getConversionRate(msg.value) >= minimumUsd, "Didn't send enough !!!!"); //-> msg.val -> eth or blockchain currency being sent
+        require(msg.value.getConversionRate() >= minimumUsd, "Didn't send enough !!!!");
+        //here getConversionRate is not asking for any parameters but in the getConversionRate() methos, it is asking for uint256
+        //here, it(the library function) takes map.value as the first parameter.  
+        //this is valid for only first parameter, it the fuction holds more than one parameter then we have to provide the second and more(not 1st) parameter in the function here,
+        //                          ~~ refer PriceConverter.sol(getConversionRate()) for referance
+
+        funders.push(msg.sender); //-> msg.sender holds the user address(who calls the fund function)--> 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4 //idk how
+        addressToAmountFunded[msg.sender] += msg.value;
     }
 
     //     uint256 favNo;
@@ -33,35 +48,33 @@ contract FundMe {
 
 
 
-    function getPrice() public view returns(uint256) { //to contact outside of out contrasts(using chainlink/oracle link)
-            //ABI
-            //address 0x694AA1769357215DE4FAC081bf1f309aDC325306 --address of other contract we wanna interact
+    function withdraw() public { //withdrawing all the amount in the contract to zero --> remvove funders and amount of address as well
 
-            AggregatorV3Interface priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
-            // (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound) = priceFeed.latestRoundData();    
-            (,int256 answer,,,) = priceFeed.latestRoundData();  
-            //thsi will be price, ETH in terms of USD
-            // 30000.00000000
-            return uint256(answer * 1e10);
-    }
+        for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
+            address funder = funders[funderIndex];
+            addressToAmountFunded[funder] = 0;
+        }
+        //reset the array
+        funders = new address[](0); 
+        //withdraw the fund 
+        //there are three diff ways to withdraw fund 
+        /*
+        1 : Transfer
+        2 : Send
+        3 : Call
+        */
 
+        // //Transfer -> max of 2300 gas else fails
+        // payable(msg.sender).transfer(address(this).balance); //typecast (msg.sender) type to payable sender type which was an address orginally, 
 
+        // //Send -> max of 2300 gas and returns bool
+        // bool sendSucess = payable(msg.sender).send(address(this).balance);
+        // require(sendSucess, "Send Failed");
 
-    //these interfaces help is to get the offchain data.(eg : oracle nodes)
-    // to interact with the contracts outside of out project
-    function getVersion() public view returns(uint256)  { 
-            AggregatorV3Interface priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
-            return priceFeed.version();
-    }
-
-
-    function getConversionRate(uint256 ethAmount) public view returns(uint256) {
-            uint256 ethPrice = getPrice();
-            //3000_0000000000000000000 = ETH / USD price
-            //1_0000000000000000000 ETH
-            uint256 ethAmountInUsd = (ethPrice * ethAmount) / 1e18;
-            // 2999.9999999999999999 -> 3000
-            return ethAmountInUsd;
+        //Call -> forward all gas or set gas, returns bool
+        //native and most used way to send or recieve eth or native token
+        (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
+        require(callSuccess, "Call Failed");
     }
 
 
