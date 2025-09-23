@@ -5,25 +5,38 @@ pragma solidity ^0.8.8;
 //importing lib 
 import "./PriceConverter.sol";
 
+
+
+//we can create our own error to save gas and make it more efficient
+error NotOwner();
+
+
+// gas 772,201 -> without constant and immutable
+// gas 729,080 -> with constant and immutable 
 contract FundMe {
 
 
     using PriceConverter for uint256;
     
 
-    uint256 public minimumUsd = 50 * 1e18;
+    uint256 public constant MINIMUM_USD = 50 * 1e18; //naming conventio - all caps for constant variable
+    //with const - 347
+    //without const - 2446
+    //this actually saves storage because instead of storing it into storage block it gets saved in the bytecode of the block
+
 
     address[] public funders; //list of address of funders
     mapping(address => uint256) public addressToAmountFunded;
 
     //owner of the contract
-    address public owner;
-
+    address public immutable i_owner; //naming convension - added i_ before variable
+    //with immutable - 439
+    //without immutable - 2574
 
     constructor() {
         // minimumUsd = 2; //here the minimumUsd is no longer the defined one, it's 2 now
         // setting up owner of the contract
-        owner = msg.sender; //now owner will be the one who deployed the contract
+        i_owner = msg.sender; //now owner will be the one who deployed the contract
     }
     /*
     as it's alternative we could've also create a function to setup the owner which would've required 
@@ -46,7 +59,7 @@ contract FundMe {
         //with library we can also do msg.value.getConversionRate(), huhhhhhhh (ref : ProceConverter(it's a creted lib))
         // require(msg.value >= minimumUsd, "Didn't send enough !!!!");
         // require(getConversionRate(msg.value) >= minimumUsd, "Didn't send enough !!!!"); //-> msg.val -> eth or blockchain currency being sent
-        require(msg.value.getConversionRate() >= minimumUsd, "Didn't send enough !!!!");
+        require(msg.value.getConversionRate() >= MINIMUM_USD, "Didn't send enough !!!!");
         //here getConversionRate is not asking for any parameters but in the getConversionRate() methos, it is asking for uint256
         //here, it(the library function) takes map.value as the first parameter.  
         //this is valid for only first parameter, it the fuction holds more than one parameter then we have to provide the second and more(not 1st) parameter in the function here,
@@ -122,12 +135,28 @@ contract FundMe {
 
 
     modifier onlyOwner { //works as a middleware in node
-        require(msg.sender == owner, "Sender is now OWNER");
+        // require(msg.sender == i_owner, "Sender is now OWNER");
+        if(msg.sender != i_owner) revert NotOwner(); //instead of above statement, because this is more gas efficient
         _; //this means continuing the rest of the code after the code above
 
 //      _; //this means continuing the rest of the code and then execute the below line
 //        require(msg.sender == owner, "Sender is now OWNER");
-        
     }
+
+    /*what happens if someone sends ETH or token to this contrac without calling the fund function.(directly from wallet t the address)
+    (it won't store the funders and the amount which we manually did the in fund function).
+    we can use recieve or callback function to solve this problem.
+    though they use justa bit extra gas than normally calling the function by themselves instead of sending with other ways
+    */
+    
+
+    receive() external payable { /*refer receive() in FallbaclkExample.sol*/
+        fund(); //now the fund will be triggered even if someone sends eth or token without using the fund function
+    }
+
+    fallback() external payable { /*refer fallback() in FallbaclkExample.sol*/
+        fund();
+    }
+
 
 }
