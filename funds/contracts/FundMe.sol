@@ -16,6 +16,26 @@ contract FundMe {
     address[] public funders; //list of address of funders
     mapping(address => uint256) public addressToAmountFunded;
 
+    //owner of the contract
+    address public owner;
+
+
+    constructor() {
+        // minimumUsd = 2; //here the minimumUsd is no longer the defined one, it's 2 now
+        // setting up owner of the contract
+        owner = msg.sender; //now owner will be the one who deployed the contract
+    }
+    /*
+    as it's alternative we could've also create a function to setup the owner which would've required 
+    to call that function to set up the owner, which is not good(will ask for extra gas and step), so we will use constructor to set it up.
+
+    function setOwner() public {
+        owner = msg.sender;
+    }
+    */
+
+
+
     function fund() payable public {
         //Want to be able to send minimum fund amount in USD
         //1. How do we send ETH to this contract
@@ -48,7 +68,45 @@ contract FundMe {
 
 
 
-    function withdraw() public { //withdrawing all the amount in the contract to zero --> remvove funders and amount of address as well
+
+
+    //here anybody can withdraw from this contract, so moving next downside
+
+    // function withdraw() public { //withdrawing all the amount in the contract to zero --> remvove funders and amount of address as well
+    //     for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
+    //         address funder = funders[funderIndex];
+    //         addressToAmountFunded[funder] = 0;
+    //     }
+    //     //reset the array
+    //     funders = new address[](0); 
+    //     //withdraw the fund 
+    //     //there are three diff ways to withdraw fund 
+    //     /*
+    //     1 : Transfer
+    //     2 : Send
+    //     3 : Call
+    //     */
+
+    //     // //Transfer -> max of 2300 gas else fails
+    //     // payable(msg.sender).transfer(address(this).balance); //typecast (msg.sender) type to payable sender type which was an address orginally, 
+
+    //     // //Send -> max of 2300 gas and returns bool
+    //     // bool sendSucess = payable(msg.sender).send(address(this).balance);
+    //     // require(sendSucess, "Send Failed");
+
+    //     //Call -> forward all gas or set gas, returns bool
+    //     //native and most used way to send or recieve eth or native token
+    //     (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
+    //     require(callSuccess, "Call Failed");
+    // }
+
+
+    //setting up so only owner can widraw from the contract
+    //so now we will use a constructor for it and set up the owner of the contract
+    function withdraw() public onlyOwner { 
+        //consition to withdraw
+        // require(msg.sender == owner, "Sender is now OWNER");
+        //we will use modifier and define the line so we can use the defined keyword wherever we want to, middleware in node
 
         for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
             address funder = funders[funderIndex];
@@ -56,26 +114,20 @@ contract FundMe {
         }
         //reset the array
         funders = new address[](0); 
-        //withdraw the fund 
-        //there are three diff ways to withdraw fund 
-        /*
-        1 : Transfer
-        2 : Send
-        3 : Call
-        */
 
-        // //Transfer -> max of 2300 gas else fails
-        // payable(msg.sender).transfer(address(this).balance); //typecast (msg.sender) type to payable sender type which was an address orginally, 
-
-        // //Send -> max of 2300 gas and returns bool
-        // bool sendSucess = payable(msg.sender).send(address(this).balance);
-        // require(sendSucess, "Send Failed");
-
-        //Call -> forward all gas or set gas, returns bool
-        //native and most used way to send or recieve eth or native token
+        //withdraw the fund using call
         (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
         require(callSuccess, "Call Failed");
     }
 
+
+    modifier onlyOwner { //works as a middleware in node
+        require(msg.sender == owner, "Sender is now OWNER");
+        _; //this means continuing the rest of the code after the code above
+
+//      _; //this means continuing the rest of the code and then execute the below line
+//        require(msg.sender == owner, "Sender is now OWNER");
+        
+    }
 
 }
