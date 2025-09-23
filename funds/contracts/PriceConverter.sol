@@ -22,7 +22,6 @@ library PriceConverter {
     }
 
 
-
     //these interfaces help is to get the offchain data.(eg : oracle nodes)
     // to interact with the contracts outside of out project
     function getVersion() internal view returns(uint256)  { 
