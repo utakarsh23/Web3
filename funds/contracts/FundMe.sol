@@ -19,7 +19,7 @@ contract FundMe {
     using PriceConverter for uint256;
     
 
-    uint256 public constant MINIMUM_USD = 50 * 1e18; //naming conventio - all caps for constant variable
+    uint256 public constant MINIMUM_USD = 50 * 1e18; //naming convention - all caps for constant variable
     //with const - 347
     //without const - 2446
     //this actually saves storage because instead of storing it into storage block it gets saved in the bytecode of the block
@@ -29,7 +29,7 @@ contract FundMe {
     mapping(address => uint256) public addressToAmountFunded;
 
     //owner of the contract
-    address public immutable i_owner; //naming convension - added i_ before variable
+    address public immutable i_owner; //naming convention - added i_ before variable
     //with immutable - 439
     //without immutable - 2574
 
