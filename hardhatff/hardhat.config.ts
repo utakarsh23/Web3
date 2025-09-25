@@ -1,6 +1,7 @@
 import type { HardhatUserConfig } from "hardhat/config";
 import hardhatEthers from "@nomicfoundation/hardhat-ethers";
 import hardhatVerify from "@nomicfoundation/hardhat-verify";
+
 import "@nomicfoundation/hardhat-verify";
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -50,6 +51,11 @@ const config: HardhatUserConfig = {
       url: rpcUrl || configVariable("rpc_url"),
       accounts: privateKey ? [privateKey] : [configVariable("SEPOLIA_PRIVATE_KEY")],
       chainId : 11155111,
+    },
+    localhost: {
+      type: "http",
+      url: "http://127.0.0.1:8545/",
+      chainId : 31337,
     },
   },
 };

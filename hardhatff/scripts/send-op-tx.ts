@@ -5,14 +5,13 @@ import { verifyContract } from "@nomicfoundation/hardhat-verify/verify";
 // const hre = require("hardhat");
 // const { ethers } = hre;
 
-
-
+import ethers from "hardhat";
 // Connect to the desired network.
 // Replace "hardhat" with the network name you wish to deploy to,
 // as configured in your hardhat.config.ts file.
-const { ethers } = await network.connect({
-  network: "sepolia", // Example: "sepolia", "polygon", etc.
-});
+// const { ethers } = await network.connect({
+//   network: "sepolia", // Example: "sepolia", "polygon", etc.
+// });
 
 async function main() {
   const [deployer] = await ethers.getSigners();
