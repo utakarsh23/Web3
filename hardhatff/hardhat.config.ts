@@ -1,4 +1,13 @@
 import type { HardhatUserConfig } from "hardhat/config";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const privateKey = process.env.PVT_KEY;
+const rpcUrl = process.env.SEP_RPC_URL;
+
+
+console.log(privateKey)
+console.log(rpcUrl)
 
 import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 import { configVariable } from "hardhat/config";
@@ -28,10 +37,10 @@ const config: HardhatUserConfig = {
       chainType: "op",
     },
     sepolia: {
-      type: "http",
-      chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+      type : "http",
+      url: rpcUrl || configVariable("rpc_url"),
+      accounts: privateKey ? [privateKey] : [configVariable("SEPOLIA_PRIVATE_KEY")],
+      chainId : 11155111,
     },
   },
 };

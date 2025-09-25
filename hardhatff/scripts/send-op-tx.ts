@@ -4,23 +4,22 @@ import { network } from "hardhat";
 // Replace "hardhat" with the network name you wish to deploy to,
 // as configured in your hardhat.config.ts file.
 const { ethers } = await network.connect({
-  network: "hardhatOp", // Example: "sepolia", "polygon", etc.
+  network: "sepolia", // Example: "sepolia", "polygon", etc.
 });
 
 async function main() {
-  // Get the deployer account.
   const [deployer] = await ethers.getSigners();
+  //getting dep account
   console.log("Deploying contracts with the account:", deployer.address);
   console.log("Account balance:", (await ethers.provider.getBalance(deployer.address)).toString());
 
-  // Deploy the contract.
+  //deploying
   const simpleStorage = await ethers.deployContract("SimpleStorage", [
-    /* Add constructor arguments here if any */
   ]);
   await simpleStorage.waitForDeployment();
   console.log(`SimpleStorage deployed to ${simpleStorage.target}`);
 
-  // Call retrieve before updating.
+  //retrieve function
   let currentValue = await simpleStorage.retrieve();
   console.log("Current favNo:", currentValue.toString());
 
