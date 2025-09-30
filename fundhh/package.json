@@ -1,5 +1,5 @@
 {
-  "name": "ffhardhat",
+  "name": "fundhh",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
@@ -27,7 +27,7 @@
     "typechain": "^8.3.2"
   },
   "dependencies": {
-    "dotenv": "^17.2.2",
-    "hardhat-deploy": "^1.0.4"
+    "@chainlink/contracts": "^1.4.0",
+    "dotenv": "^17.2.2"
   }
 }

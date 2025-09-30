@@ -60,10 +60,10 @@ contract FundMe {
         // require(msg.value >= minimumUsd, "Didn't send enough !!!!");
         // require(getConversionRate(msg.value) >= minimumUsd, "Didn't send enough !!!!"); //-> msg.val -> eth or blockchain currency being sent
         require(msg.value.getConversionRate() >= MINIMUM_USD, "Didn't send enough !!!!");
-        //here getConversionRate is not asking for any parameters but in the getConversionRate() methos, it is asking for uint256
+        //here getConversionRate is not asking for any parameters but in the getConversionRate() method, it is asking for uint256
         //here, it(the library function) takes map.value as the first parameter.  
-        //this is valid for only first parameter, it the fuction holds more than one parameter then we have to provide the second and more(not 1st) parameter in the function here,
-        //                          ~~ refer PriceConverter.sol(getConversionRate()) for referance
+        //this is valid for only first parameter, it the function holds more than one parameter then we have to provide the second and more(not 1st) parameter in the function here,
+        //                          ~~ refer PriceConverter.sol(getConversionRate()) for reference
 
         funders.push(msg.sender); //-> msg.sender holds the user address(who calls the fund function)--> 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4 //idk how
         addressToAmountFunded[msg.sender] += msg.value;
@@ -72,12 +72,12 @@ contract FundMe {
     //     uint256 favNo;
     //     //revert -> undo any action before and send remaining gas back
     //     function fund() payable public {
-    //     favNo = 5;    //if fails then this will not be changed due to revertion
+    //     favNo = 5;    //if fails then this will not be changed due to reverting
     //     require(msg.value > 1e18, "Didn't send enough !!!!");
     //     -->> if this fails then the gas used till here gets used and the remaining gas by will be given back to the user
     // }
     // image the above method takes 100 gas, and before require it uses 18, the require uses 10, the rest uses the rest,
-    // so if the require is false/fails for the consition, then the rest of the(72 gas) is returned back and won't be used.
+    // so if the require is false/fails for the condition, then the rest of the(72 gas) is returned back and won't be used.
 
 
 
@@ -85,7 +85,7 @@ contract FundMe {
 
     //here anybody can withdraw from this contract, so moving next downside
 
-    // function withdraw() public { //withdrawing all the amount in the contract to zero --> remvove funders and amount of address as well
+    // function withdraw() public { //withdrawing all the amount in the contract to zero --> remove funders and amount of address as well
     //     for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
     //         address funder = funders[funderIndex];
     //         addressToAmountFunded[funder] = 0;
@@ -101,14 +101,14 @@ contract FundMe {
     //     */
 
     //     // //Transfer -> max of 2300 gas else fails
-    //     // payable(msg.sender).transfer(address(this).balance); //typecast (msg.sender) type to payable sender type which was an address orginally, 
+    //     // payable(msg.sender).transfer(address(this).balance); //typecast (msg.sender) type to payable sender type which was an address originally,
 
     //     // //Send -> max of 2300 gas and returns bool
-    //     // bool sendSucess = payable(msg.sender).send(address(this).balance);
-    //     // require(sendSucess, "Send Failed");
+    //     // bool sendSuccess = payable(msg.sender).send(address(this).balance);
+    //     // require(sendSuccess, "Send Failed");
 
     //     //Call -> forward all gas or set gas, returns bool
-    //     //native and most used way to send or recieve eth or native token
+    //     //native and most used way to send or receive eth or native token
     //     (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
     //     require(callSuccess, "Call Failed");
     // }
@@ -117,7 +117,7 @@ contract FundMe {
     //setting up so only owner can widraw from the contract
     //so now we will use a constructor for it and set up the owner of the contract
     function withdraw() public onlyOwner { 
-        //consition to withdraw
+        //condition to withdraw
         // require(msg.sender == owner, "Sender is now OWNER");
         //we will use modifier and define the line so we can use the defined keyword wherever we want to, middleware in node
 
@@ -143,18 +143,18 @@ contract FundMe {
 //        require(msg.sender == owner, "Sender is now OWNER");
     }
 
-    /*what happens if someone sends ETH or token to this contrac without calling the fund function.(directly from wallet t the address)
+    /*what happens if someone sends ETH or token to this contract without calling the fund function.(directly from wallet t the address)
     (it won't store the funders and the amount which we manually did the in fund function).
-    we can use recieve or callback function to solve this problem.
+    we can use receive or callback function to solve this problem.
     though they use justa bit extra gas than normally calling the function by themselves instead of sending with other ways
     */
     
 
-    receive() external payable { /*refer receive() in FallbaclkExample.sol*/
+    receive() external payable { /*refer receive() in FallbackExample.sol*/
         fund(); //now the fund will be triggered even if someone sends eth or token without using the fund function
     }
 
-    fallback() external payable { /*refer fallback() in FallbaclkExample.sol*/
+    fallback() external payable { /*refer fallback() in FallbackExample.sol*/
         fund();
     }
 
